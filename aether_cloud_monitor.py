@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, render_template_string, Response, request
 import csv
+import hmac
 import io
 import os
 import platform
@@ -12,6 +13,26 @@ from datetime import datetime
 import psutil
 
 app = Flask(__name__)
+
+# Optional login: set AETHER_USER and AETHER_PASSWORD to require HTTP Basic authentication.
+# Use it together with HTTPS (AETHER_CERT and AETHER_KEY), because Basic credentials are only
+# base64-encoded and are readable on plain HTTP.
+AUTH_USER = os.environ.get('AETHER_USER', '')
+AUTH_PASSWORD = os.environ.get('AETHER_PASSWORD', '')
+
+
+@app.before_request
+def require_login():
+    if not AUTH_PASSWORD:
+        return None
+    given = request.authorization
+    ok = (given is not None
+          and hmac.compare_digest(given.username or '', AUTH_USER)
+          and hmac.compare_digest(given.password or '', AUTH_PASSWORD))
+    if ok:
+        return None
+    return Response('Authentication required', 401, {'WWW-Authenticate': 'Basic realm="AETHER"'})
+
 LOG_PATH = os.path.expanduser('~/monitor_log.csv')
 EVENT_PATH = os.path.expanduser('~/monitor_events.csv')
 DATA_LOCK = threading.Lock()
@@ -44,7 +65,7 @@ def sampler():
 HTML = r'''<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AETHER / Cloud Intelligence</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="/static/chart.umd.js"></script>
 <style>
 :root{--bg:#0a101b;--panel:#101d2b;--panel2:#142535;--edge:#26394a;--text:#e8f0f3;--muted:#91a6b3;--teal:#5ce1cf;--amber:#e5b76b;--red:#f37e82;--blue:#83a9e7}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 85% -10%,#19364a 0%,transparent 43%),var(--bg);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif} .shell{max-width:1450px;margin:auto;padding:30px 35px 70px}
@@ -143,4 +164,6 @@ def system():
 
 if __name__ == '__main__':
     threading.Thread(target=sampler, daemon=True).start()
-    app.run(host=os.environ.get('AETHER_HOST', '127.0.0.1'), port=int(os.environ.get('AETHER_PORT', '5000')), debug=False, use_reloader=False)
+    cert, key = os.environ.get('AETHER_CERT'), os.environ.get('AETHER_KEY')
+    app.run(host=os.environ.get('AETHER_HOST', '127.0.0.1'), port=int(os.environ.get('AETHER_PORT', '5000')),
+            ssl_context=(cert, key) if cert and key else None, debug=False, use_reloader=False)

@@ -149,6 +149,26 @@ python3 latency_test.py --runs 3 --load-seconds 20
 
 The sampler records one reading about every 2 seconds, so detection delays of a few seconds are expected. Results depend on the virtual machine and are not a production benchmark.
 
+## Optional login and HTTPS
+
+By default AETHER has no login and listens on 127.0.0.1 only. For use beyond the local machine (for example in the VirtualBox setup), enable these optional settings:
+
+```bash
+# one-off self-signed certificate for a lab VM
+openssl req -x509 -newkey rsa:2048 -nodes -keyout key.pem -out cert.pem -days 30 -subj "/CN=aether"
+
+AETHER_HOST=0.0.0.0 AETHER_USER=admin AETHER_PASSWORD='choose-a-strong-password' \
+AETHER_CERT=cert.pem AETHER_KEY=key.pem python3 aether_cloud_monitor.py
+```
+
+- `AETHER_USER` and `AETHER_PASSWORD` turn on HTTP Basic authentication for every page and API route. The password is compared in constant time.
+- `AETHER_CERT` and `AETHER_KEY` turn on HTTPS. Use both: Basic credentials are readable on plain HTTP.
+- A self-signed certificate makes the browser show a warning. That is expected for a lab VM; use a real certificate for anything else.
+- Chart.js is now served from `static/chart.umd.js` (Chart.js 4.4.7, MIT licence) instead of a CDN, so the dashboard has no third-party script dependency and works offline.
+- `latency_test.py` reads `AETHER_USER` and `AETHER_PASSWORD` from the environment, and accepts an `https://` URL.
+
+Limits: one shared login, no rate limiting or account lockout, no audit log of logins, and no external alert delivery (email or chat). These are not production controls.
+
 ## Security Considerations
 
 - Flask debug mode is disabled.

@@ -14,7 +14,10 @@ import csv
 import json
 import multiprocessing
 import time
+import os
 import urllib.request
+import base64
+import ssl
 from datetime import datetime
 
 
@@ -25,7 +28,14 @@ def burn(seconds):
 
 
 def get_status(url):
-    with urllib.request.urlopen(url, timeout=3) as r:
+    # Optional login (AETHER_USER / AETHER_PASSWORD) and self-signed HTTPS for local tests.
+    req = urllib.request.Request(url)
+    user, password = os.environ.get('AETHER_USER'), os.environ.get('AETHER_PASSWORD')
+    if password:
+        token = base64.b64encode(f'{user or ""}:{password}'.encode()).decode()
+        req.add_header('Authorization', 'Basic ' + token)
+    ctx = ssl._create_unverified_context() if url.startswith('https') else None
+    with urllib.request.urlopen(req, timeout=3, context=ctx) as r:
         return json.load(r)
 
 
