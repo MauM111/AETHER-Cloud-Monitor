@@ -15,4 +15,4 @@ Marius Morar
 
 ---
 
-*Sample cover letter prepared for the PFD200 portfolio. It is not represented as an application submitted to a specific employer.*
+
