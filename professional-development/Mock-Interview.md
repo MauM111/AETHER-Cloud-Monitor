@@ -28,7 +28,7 @@ My main development gap is hands-on experience with cloud services and infrastru
 
 The strongest responses are those supported by practical evidence from AETHER: using `systemctl` and `journalctl`, testing alerts under CPU load, and explaining how Flask, Python and the dashboard interact. A key development area is hands-on public-cloud experience. Another is communicating technical work concisely: I should give a clear summary first, then expand when asked.
 
-**Action plan:** Practise concise STAR responses, rehearse Linux troubleshooting scenarios and complete a documented small cloud deployment lab.
+
 
 ---
 
