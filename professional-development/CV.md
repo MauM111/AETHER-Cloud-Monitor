@@ -45,4 +45,3 @@ Computing student currently completing Level 5, developing practical skills in L
 
 ---
 
-*Academic CV prepared for PFD200 professional development. Personal phone number, email and home address have been omitted from this public version.*
