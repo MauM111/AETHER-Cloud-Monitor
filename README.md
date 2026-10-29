@@ -88,7 +88,7 @@ source venv/bin/activate
 ### 3. Install dependencies
 
 ```bash
-pip install flask psutil
+pip install -r requirements.txt
 ```
 
 ### 4. Start AETHER
@@ -109,9 +109,23 @@ The application runs locally by default. When running inside a virtual machine, 
 
 The Flask development server is intended for development and demonstration, not direct exposure to the public internet.
 
+## Screenshots
+
+| Screenshot | What it shows |
+|---|---|
+| ![Initial dashboard](01_Initial_Dashboard.png) | Initial prototype: live CPU, RAM and disk values with saved history |
+| ![AETHER dashboard](02_AETHER_Dashboard.png) | Upgraded AETHER dashboard at baseline (server online / nominal) |
+| ![CSV in Excel](03_CSV_Excel.png) | Monitoring history exported to CSV and opened in Excel |
+| ![CPU stress test](04_CPU_Stress_100_Percent.png) | CPU load test: 100% utilisation and a CRITICAL status |
+| ![CPU recovery](05_CPU_Recovery.png) | After the load ended: CPU graph shows the spike and the return to normal |
+| ![Terminal test](06_Terminal_Test.png) | Linux terminal: service and application checks |
+| ![Connection failure](07_Connection_Failure.png) | Connectivity failure test with the service interrupted |
+| ![Historical chart](08_Historical_Chart.png) | Historical explorer showing recorded peaks |
+| ![Final checks](09_Final_Terminal_Checks.png) | Final operational checks in the terminal |
+
 ## Testing and Validation
 
-AETHER was tested in an Ubuntu virtual machine using several scenarios.
+AETHER was tested manually in an Ubuntu virtual machine using the scenarios below. These are single-VM functional checks, not a reliability benchmark.
 
 | Test | Result |
 |---|---|
@@ -125,10 +139,21 @@ AETHER was tested in an Ubuntu virtual machine using several scenarios.
 | Automatic dashboard recovery after reconnection | Passed |
 | Automatic startup using systemd | Passed |
 
+### Repeatable CPU alert test
+
+`latency_test.py` (standard library only) runs on the same machine as AETHER. For each run it loads every CPU core for a fixed time, records the start time, and measures how long AETHER takes to report CRITICAL (detection delay) and to return to NORMAL (recovery time). Results are printed and saved to `latency_results.csv`.
+
+```bash
+python3 latency_test.py --runs 3 --load-seconds 20
+```
+
+The sampler records one reading about every 2 seconds, so detection delays of a few seconds are expected. Results depend on the virtual machine and are not a production benchmark.
+
 ## Security Considerations
 
 - Flask debug mode is disabled.
-- The application binds to localhost by default.
+- The application binds to localhost (127.0.0.1) by default.
+- In the VirtualBox test setup, the Windows host could not reach a localhost-only Flask server through NAT. For that test the bind address was set to `0.0.0.0`: `AETHER_HOST=0.0.0.0 python3 aether_cloud_monitor.py`. This exposes the dashboard (which has no login) to the network, so use it only on a trusted VM network and add a firewall rule or authentication before any wider use.
 - Remote access was tested through SSH.
 - Historical monitoring data is excluded from the public repository.
 - Production deployment would require additional authentication, access controls, HTTPS and appropriate service configuration.

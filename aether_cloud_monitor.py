@@ -143,4 +143,4 @@ def system():
 
 if __name__ == '__main__':
     threading.Thread(target=sampler, daemon=True).start()
-    app.run(host='127.0.0.1', port=5000, debug=False, use_reloader=False)
+    app.run(host=os.environ.get('AETHER_HOST', '127.0.0.1'), port=int(os.environ.get('AETHER_PORT', '5000')), debug=False, use_reloader=False)
