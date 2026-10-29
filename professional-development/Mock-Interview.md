@@ -32,4 +32,4 @@ The strongest responses are those supported by practical evidence from AETHER: u
 
 ---
 
-*Written preparation and reflection. This is not a verbatim record of classroom questions or lecturer feedback.*
+
